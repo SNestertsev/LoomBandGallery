@@ -20,11 +20,13 @@ System.register(["@angular/core"], function(exports_1, context_1) {
         execute: function() {
             AppComponent = (function () {
                 function AppComponent() {
+                    this.title = "Loom Band Gallery";
                 }
                 AppComponent = __decorate([
                     core_1.Component({
                         selector: "app",
-                        template: "<h1>Loom Band Gallery</h1>\n<div>...the best is yet to come!</div>"
+                        template: "\n<h1>{{title}}</h1>\n<item-list class=\"latest\"></item-list>\n<item-list class=\"most-viewed\"></item-list>\n<item-list class=\"random\"></item-list>\n",
+                        styles: ["\nitem-list {\n    min-width: 332px;\n    border: 1px solid #aaaaaa;\n    display: inline-block;\n    margin: 0 10px;\n    padding: 10px;\n}\nitem-list.latest {\n    background-color: #f9f9f9;\n}\nitem-list.most-viewed {\n    background-color: #f0f0f0;\n}\nitem-list.random {\n    background-color: #e9e9e9;\n}\n"]
                     }), 
                     __metadata('design:paramtypes', [])
                 ], AppComponent);
