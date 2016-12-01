@@ -11,28 +11,27 @@ System.register(["@angular/core"], function(exports_1, context_1) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var core_1;
-    var AppComponent;
+    var LoginComponent;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
             }],
         execute: function() {
-            AppComponent = (function () {
-                function AppComponent() {
-                    this.title = "Loom Band Gallery";
+            LoginComponent = (function () {
+                function LoginComponent() {
+                    this.title = "Login";
                 }
-                AppComponent = __decorate([
+                LoginComponent = __decorate([
                     core_1.Component({
-                        selector: "app",
-                        template: "\n<h1>{{title}}</h1>\n<div class=\"menu\">\n    <a class=\"home\" [routerLink]=\"['']\">Home</a>\n    | <a class=\"about\" [routerLink]=\"['about']\">About</a>\n    | <a class=\"login\" [routerLink]=\"['login']\">Login</a>\n</div>\n<router-outlet></router-outlet>\n",
-                        styles: ["\nitem-list {\n    min-width: 332px;\n    border: 1px solid #aaaaaa;\n    display: inline-block;\n    margin: 0 10px;\n    padding: 10px;\n}\nitem-list.latest {\n    background-color: #f9f9f9;\n}\nitem-list.most-viewed {\n    background-color: #f0f0f0;\n}\nitem-list.random {\n    background-color: #e9e9e9;\n}\n"]
+                        selector: "login",
+                        template: "\n<h2>{{title}}</h2>\n<div>\n    TODO: Not implemented yet.\n</div>\n"
                     }), 
                     __metadata('design:paramtypes', [])
-                ], AppComponent);
-                return AppComponent;
+                ], LoginComponent);
+                return LoginComponent;
             }());
-            exports_1("AppComponent", AppComponent);
+            exports_1("LoginComponent", LoginComponent);
         }
     }
 });
