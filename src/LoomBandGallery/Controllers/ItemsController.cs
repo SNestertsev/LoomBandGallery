@@ -5,12 +5,28 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using LoomBandGallery.ViewModels;
 using Newtonsoft.Json;
+using Nelibur.ObjectMapper;
+
+using LoomBandGallery.Data;
+using LoomBandGallery.Data.Items;
 
 namespace LoomBandGallery.Controllers
 {
     [Route("api/[controller]")]
     public class ItemsController : Controller
     {
+        #region Private Fields
+        private ApplicationDbContext DbContext;
+        #endregion Private Fields
+
+        #region Constructor
+        public ItemsController(ApplicationDbContext context)
+        {
+            // Dependency Injetion
+            DbContext = context;
+        }
+        #endregion Constructor
+
         #region Attribute-based routes
 
         /// <summary>
@@ -29,8 +45,8 @@ namespace LoomBandGallery.Controllers
         public IActionResult GetLatest(int num)
         {
             if (num > MaxNumberOfItems) num = MaxNumberOfItems;
-            var items = GetSampleItems().OrderByDescending(i => i.CreatedDate).Take(num);
-            return new JsonResult(items, DefaultJsonSettings);
+            var items = DbContext.Items.OrderByDescending(i => i.CreatedDate).Take(num).ToArray();
+            return new JsonResult(ToItemViewModelList(items), DefaultJsonSettings);
         }
 
         /// <summary>
@@ -49,8 +65,8 @@ namespace LoomBandGallery.Controllers
         public IActionResult GetMostViewed(int num)
         {
             if (num > MaxNumberOfItems) num = MaxNumberOfItems;
-            var items = GetSampleItems().OrderByDescending(i => i.ViewCount).Take(num);
-            return new JsonResult(items, DefaultJsonSettings);
+            var items = DbContext.Items.OrderByDescending(i => i.ViewCount).Take(num).ToArray();
+            return new JsonResult(ToItemViewModelList(items), DefaultJsonSettings);
         }
 
         /// <summary>
@@ -69,8 +85,8 @@ namespace LoomBandGallery.Controllers
         public IActionResult GetRandom(int num)
         {
             if (num > MaxNumberOfItems) num = MaxNumberOfItems;
-            var items = GetSampleItems().OrderBy(i => Guid.NewGuid()).Take(num);
-            return new JsonResult(items, DefaultJsonSettings);
+            var items = DbContext.Items.OrderBy(i => Guid.NewGuid()).Take(num).ToArray();
+            return new JsonResult(ToItemViewModelList(items), DefaultJsonSettings);
         }
         #endregion Attribute-based routes
 
@@ -92,11 +108,116 @@ namespace LoomBandGallery.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            return new JsonResult(GetSampleItems().Where(i => i.Id == id).FirstOrDefault(), DefaultJsonSettings);
+            var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
+            if (item != null)
+            {
+                return new JsonResult(TinyMapper.Map<ItemViewModel>(item), DefaultJsonSettings);
+            }
+            else
+            {
+                return NotFound(new { Error = $"Item ID {id} has not been found" });
+            }
+        }
+
+        /// <summary>
+        /// POST: api/items
+        /// </summary>
+        /// <returns>Creates a new Item and return it accordingly.</returns>
+        [HttpPost]
+        public IActionResult Add([FromBody] ItemViewModel ivm)
+        {
+            if (ivm != null)
+            {
+                var item = TinyMapper.Map<Item>(ivm);
+                item.CreatedDate = item.LastModifiedDate = DateTime.Now;
+                // TODO: replace the following with the current user's id when authentication will be available.
+                item.UserId = DbContext.Users.Where(u => u.UserName == "Admin").FirstOrDefault().Id;
+
+                DbContext.Items.Add(item);
+                DbContext.SaveChanges();
+                return new JsonResult(TinyMapper.Map<ItemViewModel>(item), DefaultJsonSettings);
+            }
+            return new StatusCodeResult(500);
+        }
+
+        /// <summary>
+        /// PUT: api/items/{id}
+        /// </summary>
+        /// <returns>Updates an existing Item and return it accordingly.</returns>
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] ItemViewModel ivm)
+        {
+            if (ivm != null)
+            {
+                var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
+                if (item != null)
+                {
+                    // handle the update (on per-property basis)
+                    item.UserId = ivm.UserId;
+                    item.Description = ivm.Description;
+                    item.Flags = ivm.Flags;
+                    item.Notes = ivm.Notes;
+                    item.Text = ivm.Text;
+                    item.Title = ivm.Title;
+                    item.Type = ivm.Type;
+                    // override any property that could be wise to set from server-side only
+                    item.LastModifiedDate = DateTime.Now;
+
+                    DbContext.SaveChanges();
+                    return new JsonResult(TinyMapper.Map<ItemViewModel>(item), DefaultJsonSettings);
+                }
+            }
+            return NotFound(new { Error = $"Item ID {id} has not been found" });
+        }
+
+        /// <summary>
+        /// DELETE: api/items/{id}
+        /// </summary>
+        /// <returns>Deletes an Item, returning a HTTP status 200 (ok) when done.</returns>
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
+            if (item != null)
+            {
+                DbContext.Items.Remove(item);
+                DbContext.SaveChanges();
+                return new OkResult();
+            }
+            return NotFound(new { Error = $"Item ID {id} has not been found" });
         }
         #endregion
 
         #region Private members
+        /// <summary>
+        /// Maps a collection of Item entities into a list of ItemViewModel objects.
+        /// </summary>
+        /// <param name="items">An IEnumerable collection of item entities</param>
+        /// <returns>a mapped list of ItemViewModel objects</returns>
+        private List<ItemViewModel> ToItemViewModelList(IEnumerable<Item> items)
+        {
+            var lst = new List<ItemViewModel>();
+            foreach (var i in items)
+            {
+                lst.Add(TinyMapper.Map<ItemViewModel>(i));
+            }
+            return lst;
+        }
+
+        /// <summary>
+        /// Returns a suitable JsonSerializerSettings object that can be used to generate the JsonResult return value for this Controller's methods.
+        /// </summary>
+        private JsonSerializerSettings DefaultJsonSettings
+        {
+            get
+            {
+                return new JsonSerializerSettings()
+                {
+                    Formatting = Formatting.Indented
+                };
+            }
+        }
+
         /// <summary>
         /// The default number of items to retrieve when using the parameterless overloads of the API methods retrieving item lists.
         /// </summary>
@@ -116,34 +237,6 @@ namespace LoomBandGallery.Controllers
             get
             {
                 return 100;
-            }
-        }
-
-        private IEnumerable<ItemViewModel> GetSampleItems(int num = 999)
-        {
-            DateTime date = DateTime.Today.AddDays(-num);
-            for (int id = 1; id <= num; id++)
-            {
-                yield return new ItemViewModel()
-                {
-                    Id = id,
-                    Title = $"Item {id} Title",
-                    Description = $"Item {id} Description",
-                    CreatedDate = date.AddDays(id),
-                    LastModifiedDate = date.AddDays(id),
-                    ViewCount = num - id
-                };
-            }
-        }
-
-        private JsonSerializerSettings DefaultJsonSettings
-        {
-            get
-            {
-                return new JsonSerializerSettings()
-                {
-                    Formatting = Formatting.Indented
-                };
             }
         }
         #endregion Private members

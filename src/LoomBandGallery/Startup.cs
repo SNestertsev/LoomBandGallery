@@ -7,6 +7,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Nelibur.ObjectMapper;
+
+using LoomBandGallery.Data;
+using LoomBandGallery.Data.Items;
+using LoomBandGallery.ViewModels;
 
 namespace LoomBandGallery
 {
@@ -29,10 +36,21 @@ namespace LoomBandGallery
         {
             // Add framework services.
             services.AddMvc();
+
+            // Add EntityFramework's Identity support.
+            services.AddEntityFramework();
+
+            // Add ApplicationDbContext.
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+
+            // Add ApplicationDbContext's DbSeeder
+            services.AddSingleton<DbSeeder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory,
+            DbSeeder dbSeeder)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -49,7 +67,22 @@ namespace LoomBandGallery
                 }
             });
 
+            // Add MVC to the pipeline
             app.UseMvc();
+
+            // TinyMapper binding configuration
+            TinyMapper.Bind<Item, ItemViewModel>();
+
+            // Seed the Database (if needed)
+            try
+            {
+                dbSeeder.SeedAsync().Wait();
+            }
+            catch (AggregateException e)
+            {
+
+                throw new Exception(e.ToString());
+            }
         }
     }
 }

@@ -11,6 +11,10 @@ var srcPaths = {
         'Scripts/app/main.ts',
         'Scripts/app/**/*.ts'
     ],
+    templates: [
+        'Scripts/app/**/*.html',
+        'Scripts/app/**/*.css'
+    ],
     js: [
         'Scripts/js/**/*.js',
         'node_modules/core-js/client/shim.min.js',
@@ -37,11 +41,13 @@ var destPaths = {
 
 // Compile, minify and create sourcemaps
 gulp.task('app', ['app_clean'], function () {
-    return gulp.src(srcPaths.app)
+    gulp.src(srcPaths.app)
         .pipe(gp_sourcemaps.init())
         .pipe(gp_typescript(require('./tsconfig.json').compilerOptions))
         .pipe(gp_uglify({ mangle: false }))
         .pipe(gp_sourcemaps.write('/'))
+        .pipe(gulp.dest(destPaths.app));
+    return gulp.src(srcPaths.templates)
         .pipe(gulp.dest(destPaths.app));
 });
 

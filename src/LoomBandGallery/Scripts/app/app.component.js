@@ -25,7 +25,7 @@ System.register(["@angular/core"], function(exports_1, context_1) {
                 AppComponent = __decorate([
                     core_1.Component({
                         selector: "app",
-                        template: "\n<h1>{{title}}</h1>\n<div class=\"menu\">\n    <a class=\"home\" [routerLink]=\"['']\">Home</a>\n    | <a class=\"about\" [routerLink]=\"['about']\">About</a>\n    | <a class=\"login\" [routerLink]=\"['login']\">Login</a>\n</div>\n<router-outlet></router-outlet>\n",
+                        template: "\n<h1>{{title}}</h1>\n<div class=\"menu\">\n    <a class=\"home\" [routerLink]=\"['']\">Home</a>\n    | <a class=\"about\" [routerLink]=\"['about']\">About</a>\n    | <a class=\"login\" [routerLink]=\"['login']\">Login</a>\n    | <a class=\"add\" [routerLink]=\"['item', 0]\">Add New</a>\n</div>\n<router-outlet></router-outlet>\n",
                         styles: ["\nitem-list {\n    min-width: 332px;\n    border: 1px solid #aaaaaa;\n    display: inline-block;\n    margin: 0 10px;\n    padding: 10px;\n}\nitem-list.latest {\n    background-color: #f9f9f9;\n}\nitem-list.most-viewed {\n    background-color: #f0f0f0;\n}\nitem-list.random {\n    background-color: #e9e9e9;\n}\n"]
                     }), 
                     __metadata('design:paramtypes', [])
