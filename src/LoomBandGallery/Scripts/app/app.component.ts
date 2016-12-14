@@ -1,36 +1,53 @@
 ﻿import { Component } from "@angular/core";
+import { Router } from "@angular/router";
 
 @Component({
     selector: "app",
     template: `
-<h1>{{title}}</h1>
-<div class="menu">
-    <a class="home" [routerLink]="['']">Home</a>
-    | <a class="about" [routerLink]="['about']">About</a>
-    | <a class="login" [routerLink]="['login']">Login</a>
-    | <a class="add" [routerLink]="['item/edit', 0]">Add New</a>
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+        <input type="checkbox" id="navbar-toggle-cbox">
+        <div class="navbar-header">
+            <label for="navbar-toggle-cbox" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" ariacontrols="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </label>
+            <a class="navbar-brand" href="#">
+                <img alt="logo" src="/img/logo.svg" />
+            </a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar">
+            <ul class="nav navbar-nav">
+                <li [class.active]="isActive([''])">
+                    <a class="home" [routerLink]="['']">Home</a>
+                </li>
+                <li [class.active]="isActive(['about'])">
+                    <a class="about" [routerLink]="['about']">About</a>
+                </li>
+                <li [class.active]="isActive(['login'])">
+                    <a class="login" [routerLink]="['login']">Login</a>
+                </li>
+                <li [class.active]="isActive(['item/edit', 0])">
+                    <a class="add" [routerLink]="['item/edit', 0]">Add New</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<h1 class="header">{{title}}</h1>
+<div class="main-container">
+    <router-outlet></router-outlet>
 </div>
-<router-outlet></router-outlet>
-`,
-    styles: [`
-item-list {
-    min-width: 332px;
-    border: 1px solid #aaaaaa;
-    display: inline-block;
-    margin: 0 10px;
-    padding: 10px;
-}
-item-list.latest {
-    background-color: #f9f9f9;
-}
-item-list.most-viewed {
-    background-color: #f0f0f0;
-}
-item-list.random {
-    background-color: #e9e9e9;
-}
-`]
+`
 })
 export class AppComponent {
     title = "Loom Band Gallery";
+
+    constructor(public router: Router) { }
+
+    isActive(data: any[]): boolean {
+        return this.router.isActive(this.router.createUrlTree(data), true);
+    }
 }

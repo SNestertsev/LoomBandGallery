@@ -25,8 +25,7 @@ System.register(["@angular/core"], function(exports_1, context_1) {
                 HomeComponent = __decorate([
                     core_1.Component({
                         selector: "home",
-                        template: "\n<h1>{{title}}</h1>\n<item-list class=\"latest\"></item-list>\n<item-list class=\"most-viewed\"></item-list>\n<item-list class=\"random\"></item-list>\n",
-                        styles: ["\nitem-list {\n    min-width: 332px;\n    border: 1px solid #aaaaaa;\n    display: inline-block;\n    margin: 0 10px;\n    padding: 10px;\n}\nitem-list.latest {\n    background-color: #f9f9f9;\n}\nitem-list.most-viewed {\n    background-color: #f0f0f0;\n}\nitem-list.random {\n    background-color: #e9e9e9;\n}\n"]
+                        template: "\n<h2>\n    A non-comprehensive directory of open-source video games available on the web\n</h2>\n<div class=\"col-md-4\">\n    <item-list class=\"latest\"></item-list>\n</div>\n<div class=\"col-md-4\">\n    <item-list class=\"most-viewed\"></item-list>\n</div>\n<div class=\"col-md-4\">\n    <item-list class=\"random\"></item-list>\n</div>\n"
                     }), 
                     __metadata('design:paramtypes', [])
                 ], HomeComponent);
