@@ -2,6 +2,7 @@
 import { FormBuilder, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { AuthService } from "./auth.service";
+import { UserEditComponent } from "./user-edit.component";
 
 @Component({
     selector: "login",
@@ -13,7 +14,7 @@ import { AuthService } from "./auth.service";
     </div>
     <form class="form-login" [formGroup]="loginForm" (submit)="performLogin($event)">
         <input formControlName="username" type="text" class="form-control" placeholder="Your username or e-mail address" required autofocus />
-        <input formControlName="password" type="password" class="formcontrol" placeholder="Your password" required />
+        <input formControlName="password" type="password" class="form-control" placeholder="Your password" required />
         <div class="checkbox">
             <label>
                 <input type="checkbox" value="remember-me">
@@ -24,6 +25,10 @@ import { AuthService } from "./auth.service";
             Sign in
         </button>
     </form>
+    <div class="register-link">
+        Don't have an account yet?
+        <a (click)="onRegister()">Click here to register!</a>
+    </div>
     <button class="btn btn-sm btn-default btn-block" type="submit" (click)="callExternalLogin('Facebook')">
         Login with Facebook
     </button>
@@ -61,7 +66,7 @@ export class LoginComponent {
                 // login successful
                 this.loginError = false;
                 var auth = this.authService.getAuth();
-                alert("Our Token is: " + auth.access_token);
+                // alert("Our Token is: " + auth.access_token);
                 this.router.navigate([""]);
             },
             (err) => {
@@ -83,5 +88,9 @@ export class LoginComponent {
         }
         // TODO: refactor this "window.open" approach with some OAuth2 client library (may be Facebook OAuth2 JavaScript SDK).
         this.externalProviderWindow = window.open(url, "ExternalProvider", params, false);
+    }
+
+    onRegister() {
+        this.router.navigate(["register"]);
     }
 }

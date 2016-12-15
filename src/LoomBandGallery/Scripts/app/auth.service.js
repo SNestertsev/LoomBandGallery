@@ -104,6 +104,26 @@ System.register(["@angular/core", "@angular/http", "rxjs/Observable", "./auth.ht
                 AuthService.prototype.isLoggedIn = function () {
                     return localStorage.getItem(this.authKey) != null;
                 };
+                AuthService.prototype.get = function () {
+                    return this.http.get("api/Accounts")
+                        .map(function (response) { return response.json(); });
+                };
+                AuthService.prototype.add = function (user) {
+                    return this.http.post("api/Accounts", JSON.stringify(user), new http_1.RequestOptions({
+                        headers: new http_1.Headers({
+                            "Content-Type": "application/json"
+                        })
+                    }))
+                        .map(function (response) { return response.json(); });
+                };
+                AuthService.prototype.update = function (user) {
+                    return this.http.put("api/Accounts", JSON.stringify(user), new http_1.RequestOptions({
+                        headers: new http_1.Headers({
+                            "Content-Type": "application/json"
+                        })
+                    }))
+                        .map(function (response) { return response.json(); });
+                };
                 AuthService = __decorate([
                     core_1.Injectable(), 
                     __metadata('design:paramtypes', [auth_http_1.AuthHttp])

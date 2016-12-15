@@ -19,6 +19,7 @@ import { ItemDetailViewComponent } from "./item-detail-view.component";
 import { ItemService } from "./item.service";
 import { LoginComponent } from "./login.component";
 import { PageNotFoundComponent } from "./page-not-found.component";
+import { UserEditComponent } from "./user-edit.component";
 
 @NgModule({
     // directives, components and pipes
@@ -30,7 +31,8 @@ import { PageNotFoundComponent } from "./page-not-found.component";
         ItemDetailEditComponent,
         ItemDetailViewComponent,
         LoginComponent,
-        PageNotFoundComponent
+        PageNotFoundComponent,
+        UserEditComponent
     ],
     // modules
     imports: [
