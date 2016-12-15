@@ -11,7 +11,7 @@ using LoomBandGallery.Data.Users;
 
 namespace LoomBandGallery.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         #region Constructor
         public ApplicationDbContext(DbContextOptions options) : base(options)
@@ -46,7 +46,6 @@ namespace LoomBandGallery.Data
         #region Properties
         public DbSet<Item> Items { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<ApplicationUser> Users { get; set; }
         #endregion Properties
     }
 }

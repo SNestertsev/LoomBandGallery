@@ -1,11 +1,13 @@
 ﻿import { Injectable } from "@angular/core";
 import { Http, Response, Headers, RequestOptions } from "@angular/http";
 import { Observable } from "rxjs/Observable";
+
+import { AuthHttp } from "./auth.http";
 import { Item } from "./item";
 
 @Injectable()
 export class ItemService {
-    constructor(private http: Http) { }
+    constructor(private http: AuthHttp) { }
 
     private baseUrl = "api/items/";     // Web API URL
 

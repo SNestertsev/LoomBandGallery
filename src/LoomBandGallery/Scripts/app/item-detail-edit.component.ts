@@ -1,5 +1,7 @@
 ﻿import { Component, OnInit } from "@angular/core";
 import { Router, ActivatedRoute } from "@angular/router";
+
+import { AuthService } from "./auth.service";
 import { ItemService } from "./item.service";
 import { Item } from "./item";
 
@@ -66,11 +68,15 @@ export class ItemDetailEditComponent {
     item: Item;
 
     constructor(
+        private authService: AuthService,
         private itemService: ItemService,
         private router: Router,
         private activatedRoute: ActivatedRoute) { }
 
     ngOnInit() {
+        if (!this.authService.isLoggedIn()) {
+            this.router.navigate([""]);
+        }
         var id = +this.activatedRoute.snapshot.params['id'];
         if (id) {
             this.itemService.get(id).subscribe((item) =>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -14,12 +16,18 @@ namespace LoomBandGallery.Data
     {
         #region Private Members
         private ApplicationDbContext DbContext;
+        private RoleManager<IdentityRole> RoleManager;
+        private UserManager<ApplicationUser> UserManager;
         #endregion Private Members
 
         #region Constructor
-        public DbSeeder(ApplicationDbContext dbContext)
+        public DbSeeder(ApplicationDbContext dbContext, 
+            RoleManager<IdentityRole> roleManager, 
+            UserManager<ApplicationUser> userManager)
         {
             DbContext = dbContext;
+            RoleManager = roleManager;
+            UserManager = userManager;
         }
         #endregion Constructor
 
@@ -29,39 +37,66 @@ namespace LoomBandGallery.Data
             // Create the Db if it doesn't exist
             DbContext.Database.EnsureCreated();
             // Create default Users
-            if (await DbContext.Users.CountAsync() == 0) CreateUsers();
+            if (await DbContext.Users.CountAsync() == 0) await CreateUsersAsync();
             // Create default Items (if there are none) and Comments
             if (await DbContext.Items.CountAsync() == 0) CreateItems();
         }
         #endregion Public Methods
 
         #region Seed Methods
-        private void CreateUsers()
+        private async Task CreateUsersAsync()
         {
             DateTime createdDate = DateTime.Now;
             DateTime lastModifiedDate = DateTime.Now;
+            string roleAdministrators = "Administrators";
+            string roleRegistered = "Registered";
+
+            // Create Roles (if the doesn't exist yet
+            if (!await RoleManager.RoleExistsAsync(roleAdministrators))
+            {
+                await RoleManager.CreateAsync(new IdentityRole(roleAdministrators));
+            }
+            if (!await RoleManager.RoleExistsAsync(roleRegistered))
+            {
+                await RoleManager.CreateAsync(new IdentityRole(roleRegistered));
+            }
 
             // Create the "Admin" ApplicationUser account (if it doesn't exist already)
             var user_Admin = new ApplicationUser()
             {
-                Id = Guid.NewGuid().ToString(),
                 UserName = "Admin",
                 Email = "snestertsev@yandex.ru",
                 CreatedDate = createdDate,
                 LastModifiedDate = lastModifiedDate
             };
+            // Insert "Admin" into the Database and also assign the "Administrator role to him.
+            if (await UserManager.FindByIdAsync(user_Admin.Id) == null)
+            {
+                await UserManager.CreateAsync(user_Admin, "Pass4Admin");
+                await UserManager.AddToRoleAsync(user_Admin, roleAdministrators);
+                user_Admin.EmailConfirmed = true;
+                user_Admin.LockoutEnabled = false;
+            }
+
+#if DEBUG
             // Create some sample registered user account(s) (if they don't exist already)
             var user_Rimma = new ApplicationUser()
             {
-                Id = Guid.NewGuid().ToString(),
                 UserName = "Rimma",
                 Email = "rnestertseva@yandex.ru",
                 CreatedDate = createdDate,
                 LastModifiedDate = lastModifiedDate
             };
-            // Insert sample registered users into the Database
-            DbContext.Users.AddRange(user_Admin, user_Rimma);
-            DbContext.SaveChanges();
+            // Insert sample registered user into the Database and also assign the "Registered" role to him.
+            if (await UserManager.FindByIdAsync(user_Rimma.Id) == null)
+            {
+                await UserManager.CreateAsync(user_Rimma, "Pass4Rimma");
+                await UserManager.AddToRoleAsync(user_Rimma, roleRegistered);
+                user_Rimma.EmailConfirmed = true;
+                user_Rimma.LockoutEnabled = false;
+            }
+#endif
+            await DbContext.SaveChangesAsync();
         }
 
         private void CreateItems()

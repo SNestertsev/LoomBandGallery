@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using LoomBandGallery.ViewModels;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using Nelibur.ObjectMapper;
 
 using LoomBandGallery.Data;
 using LoomBandGallery.Data.Items;
+using System.Security.Claims;
 
 namespace LoomBandGallery.Controllers
 {
@@ -124,14 +126,14 @@ namespace LoomBandGallery.Controllers
         /// </summary>
         /// <returns>Creates a new Item and return it accordingly.</returns>
         [HttpPost]
+        [Authorize]
         public IActionResult Add([FromBody] ItemViewModel ivm)
         {
             if (ivm != null)
             {
                 var item = TinyMapper.Map<Item>(ivm);
                 item.CreatedDate = item.LastModifiedDate = DateTime.Now;
-                // TODO: replace the following with the current user's id when authentication will be available.
-                item.UserId = DbContext.Users.Where(u => u.UserName == "Admin").FirstOrDefault().Id;
+                item.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
                 DbContext.Items.Add(item);
                 DbContext.SaveChanges();
@@ -145,6 +147,7 @@ namespace LoomBandGallery.Controllers
         /// </summary>
         /// <returns>Updates an existing Item and return it accordingly.</returns>
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Update(int id, [FromBody] ItemViewModel ivm)
         {
             if (ivm != null)
@@ -175,6 +178,7 @@ namespace LoomBandGallery.Controllers
         /// </summary>
         /// <returns>Deletes an Item, returning a HTTP status 200 (ok) when done.</returns>
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(int id)
         {
             var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();

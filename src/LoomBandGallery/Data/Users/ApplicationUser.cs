@@ -4,13 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 using LoomBandGallery.Data.Comments;
 using LoomBandGallery.Data.Items;
 
 namespace LoomBandGallery.Data.Users
 {
-    public class ApplicationUser
+    public class ApplicationUser : IdentityUser
     {
         #region Constructor
         public ApplicationUser()
@@ -20,14 +21,6 @@ namespace LoomBandGallery.Data.Users
         #endregion Constructor
 
         #region Properties
-        [Key]
-        [Required]
-        public string Id { get; set; }
-        [Required]
-        [MaxLength(128)]
-        public string UserName { get; set; }
-        [Required]
-        public string Email { get; set; }
         public string DisplayName { get; set; }
         public string Notes { get; set; }
         [Required]

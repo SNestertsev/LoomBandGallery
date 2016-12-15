@@ -21,7 +21,9 @@
     "Microsoft.EntityFrameworkCore": "1.0.0",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0",
     "Microsoft.EntityFrameworkCore.Design": "1.0.0-preview2-final",
-    "TinyMapper": "2.0.8"
+    "TinyMapper": "2.0.8",
+    "Microsoft.IdentityModel.Tokens": "5.0.0",
+    "System.IdentityModel.Tokens.Jwt": "5.0.0"
   },
 
   "tools": {
