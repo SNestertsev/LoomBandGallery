@@ -1,31 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using LoomBandGallery.ViewModels;
 using Newtonsoft.Json;
 using Nelibur.ObjectMapper;
 
 using LoomBandGallery.Data;
 using LoomBandGallery.Data.Items;
-using System.Security.Claims;
+using LoomBandGallery.Data.Users;
+using LoomBandGallery.ViewModels;
 
 namespace LoomBandGallery.Controllers
 {
-    [Route("api/[controller]")]
-    public class ItemsController : Controller
+    public class ItemsController : BaseController
     {
-        #region Private Fields
-        private ApplicationDbContext DbContext;
-        #endregion Private Fields
-
         #region Constructor
-        public ItemsController(ApplicationDbContext context)
+        public ItemsController(ApplicationDbContext context,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager) : base(context, signInManager, userManager)
         {
-            // Dependency Injetion
-            DbContext = context;
         }
         #endregion Constructor
 
@@ -127,13 +124,13 @@ namespace LoomBandGallery.Controllers
         /// <returns>Creates a new Item and return it accordingly.</returns>
         [HttpPost]
         [Authorize]
-        public IActionResult Add([FromBody] ItemViewModel ivm)
+        public async Task<IActionResult> Add([FromBody]ItemViewModel ivm)
         {
             if (ivm != null)
             {
                 var item = TinyMapper.Map<Item>(ivm);
                 item.CreatedDate = item.LastModifiedDate = DateTime.Now;
-                item.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                item.UserId = await GetCurrentUserId();
 
                 DbContext.Items.Add(item);
                 DbContext.SaveChanges();
@@ -206,20 +203,6 @@ namespace LoomBandGallery.Controllers
                 lst.Add(TinyMapper.Map<ItemViewModel>(i));
             }
             return lst;
-        }
-
-        /// <summary>
-        /// Returns a suitable JsonSerializerSettings object that can be used to generate the JsonResult return value for this Controller's methods.
-        /// </summary>
-        private JsonSerializerSettings DefaultJsonSettings
-        {
-            get
-            {
-                return new JsonSerializerSettings()
-                {
-                    Formatting = Formatting.Indented
-                };
-            }
         }
 
         /// <summary>

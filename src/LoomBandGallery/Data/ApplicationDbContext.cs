@@ -5,13 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using OpenIddict;
+
 using LoomBandGallery.Data.Comments;
 using LoomBandGallery.Data.Items;
 using LoomBandGallery.Data.Users;
 
 namespace LoomBandGallery.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : OpenIddictDbContext<ApplicationUser>
     {
         #region Constructor
         public ApplicationDbContext(DbContextOptions options) : base(options)

@@ -24,6 +24,12 @@ import { AuthService } from "./auth.service";
             Sign in
         </button>
     </form>
+    <button class="btn btn-sm btn-default btn-block" type="submit" (click)="callExternalLogin('Facebook')">
+        Login with Facebook
+    </button>
+    <button class="btn btn-sm btn-default btn-block" type="submit" (click)="callExternalLogin('Google')">
+        Login with Google
+    </button>
 </div>
 `
 })
@@ -31,6 +37,7 @@ export class LoginComponent {
     title = "Login";
     loginForm = null;
     loginError = false;
+    externalProviderWindow = null;
 
     constructor(
         private fb: FormBuilder,
@@ -62,5 +69,19 @@ export class LoginComponent {
                 // login failure
                 this.loginError = true;
             });
+    }
+
+    callExternalLogin(providerName: string) {
+        var url = "api/Accounts/ExternalLogin/" + providerName;
+        // minimalistic mobile devices support
+        var w = (screen.width >= 1050) ? 1050 : screen.width;
+        var h = (screen.height >= 550) ? 550 : screen.height;
+        var params = "toolbar=yes,scrollbars=yes,resizable=yes,width=" + w + ", height=" + h;
+        // close previously opened windows (if any)
+        if (this.externalProviderWindow) {
+            this.externalProviderWindow.close();
+        }
+        // TODO: refactor this "window.open" approach with some OAuth2 client library (may be Facebook OAuth2 JavaScript SDK).
+        this.externalProviderWindow = window.open(url, "ExternalProvider", params, false);
     }
 }

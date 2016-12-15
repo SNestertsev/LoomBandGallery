@@ -5,13 +5,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using OpenIddict;
 
 using LoomBandGallery.Data.Comments;
 using LoomBandGallery.Data.Items;
 
 namespace LoomBandGallery.Data.Users
 {
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUser : OpenIddictUser
     {
         #region Constructor
         public ApplicationUser()

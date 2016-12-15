@@ -28,8 +28,13 @@ namespace LoomBandGallery
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets();
+            }
+            builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
@@ -38,6 +43,9 @@ namespace LoomBandGallery
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add a reference to the Configuration object for DI
+            services.AddSingleton<IConfiguration>(c => { return Configuration; });
+
             // Add framework services.
             services.AddMvc();
 
@@ -57,6 +65,29 @@ namespace LoomBandGallery
             // Add ApplicationDbContext.
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+
+            // Register the OpenIddict services, including the default Entity Framework stores.
+            services.AddOpenIddict<ApplicationUser, ApplicationDbContext>()
+                // Integrate with EFCore
+                .AddEntityFramework<ApplicationDbContext>()
+                // Use Json Web Tokens (JWT)
+                .UseJsonWebTokens()
+                // Set a custom token endpoint (default is /connect/token)
+                .EnableTokenEndpoint(Configuration["Authentication:OpenIddict:TokenEndPoint"])
+                // Set a custom auth endpoint (default is /connect/authorize)
+                .EnableAuthorizationEndpoint(Configuration["Authentication:OpenIddict:AuthorizationEndPoint"])
+                // Allow client applications to use the grant_type=password flow.
+                .AllowPasswordFlow()
+                // Enable support for both authorization & implicit flows
+                .AllowAuthorizationCodeFlow()
+                .AllowImplicitFlow()
+                // Allow the client to refresh tokens.
+                .AllowRefreshTokenFlow()
+                // Disable the HTTPS requirement (not recommended in production)
+                .DisableHttpsRequirement()
+                // Register a new ephemeral key for development.
+                // We will register a X.509 certificate in production.
+                .AddEphemeralSigningKey();
 
             // Add ApplicationDbContext's DbSeeder
             services.AddSingleton<DbSeeder>();
@@ -82,18 +113,48 @@ namespace LoomBandGallery
             });
 
             // Add a custom Jwt Provider to generate Tokens
-            app.UseJwtProvider();
+            // app.UseJwtProvider();
+
+            // Add the AspNetCore.Identity middleware (required for external auth providers)
+            // IMPORTANT: This must be placed *BEFORE* OpenIddict and any external provider's middleware
+            app.UseIdentity();
+
+            // Add external authentication middleware below.
+            // To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
+            app.UseFacebookAuthentication(new FacebookOptions()
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                AppId = Configuration["Authentication:Facebook:AppId"],
+                AppSecret = Configuration["Authentication:Facebook:AppSecret"],
+                CallbackPath = "/signin-facebook",
+                Scope = { "email" }
+            });
+            app.UseGoogleAuthentication(new GoogleOptions()
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                ClientId = Configuration["Authentication:Google:ClientId"],
+                ClientSecret = Configuration["Authentication:Google:ClientSecret"],
+                CallbackPath = "/signin-google",
+                Scope = { "email" }
+            });
+
+            // Add OpenIddict middleware
+            // Note: UseOpenIddict() must be registered after app.UseIdentity() and the external social providers.
+            app.UseOpenIddict();
             // Add the Jwt Bearer Header Authentication to validate Tokens
             app.UseJwtBearerAuthentication(new JwtBearerOptions()
             {
                 AutomaticAuthenticate = true,
                 AutomaticChallenge = true,
                 RequireHttpsMetadata = false,
+                Authority = Configuration["Authentication:OpenIddict:Authority"],
                 TokenValidationParameters = new TokenValidationParameters()
                 {
-                    IssuerSigningKey = JwtProvider.SecurityKey,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = JwtProvider.Issuer,
+                    //IssuerSigningKey = JwtProvider.SecurityKey,
+                    //ValidateIssuerSigningKey = true,
+                    //ValidIssuer = JwtProvider.Issuer,
                     ValidateIssuer = false,
                     ValidateAudience = false
                 }
